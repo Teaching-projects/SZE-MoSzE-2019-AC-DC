@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:    
+    working_directory: ~SZE-MoSzE-2019-AC-DC
+    steps:
+      - checkout         
+      - run: 'g++ *.cpp -std=c++11'    
+      paths: a.out
+  test:   
+    steps:
+      - run: './a.out < test.txt > output.txt'
+      - run: 'diff output.txt expectedresult.txt'
+      - store_artifacts:
+          path: a.out          
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build

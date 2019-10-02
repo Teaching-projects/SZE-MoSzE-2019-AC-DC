@@ -143,12 +143,11 @@ int main() {
 			}
 		}
 	}
-	else
+	else if(command[0]!="exit")
 	{
 		cout << "ERROR: No such command\n";
 	}
 	command.clear();	
-	string input_raw = "";
 	} while (input_raw!="exit");
 	return 0;
 }
