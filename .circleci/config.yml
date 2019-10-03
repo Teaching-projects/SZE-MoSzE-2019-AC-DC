@@ -1,22 +1,21 @@
-version: 2
+version: 2.1
 jobs:
-  build:    
-    working_directory: ~SZE-MoSzE-2019-AC-DC
+  build:
+    docker:
+      - image: circleci/<language>:<version TAG>
     steps:
-      - checkout         
-      - run: 'g++ *.cpp -std=c++11'    
-      paths: a.out
-  test:   
+      - checkout
+      - run: 'g++ *.cpp -std=c++11'
+  test:
+    docker:
+      - image: circleci/<language>:<version TAG>
     steps:
+      - checkout
       - run: './a.out < test.txt > output.txt'
       - run: 'diff output.txt expectedresult.txt'
-      - store_artifacts:
-          path: a.out          
 workflows:
-  version: 2
+  version: 2.1
   build_and_test:
     jobs:
       - build
-      - test:
-          requires:
-            - build
+      - test

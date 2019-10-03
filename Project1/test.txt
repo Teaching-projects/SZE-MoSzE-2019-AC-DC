@@ -1,7 +1,0 @@
-mkdir Mappa1
-ls
-cd Mappa1
-mkdir Mappa2
-ls
-cd ..
-exit
