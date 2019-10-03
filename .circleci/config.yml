@@ -2,13 +2,13 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/<language>:<version TAG>
+      - image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run: 'g++ *.cpp -std=c++11'
   test:
     docker:
-      - image: circleci/<language>:<version TAG>
+      - image: ubuntu-1604:201903-01
     steps:
       - checkout
       - run: './a.out < test.txt > output.txt'
