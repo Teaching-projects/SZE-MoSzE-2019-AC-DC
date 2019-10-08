@@ -32,9 +32,9 @@ vector<string> split(string input)
 	return command;
 
 }
-bool parametercheck(vector<string> command)
+bool parametercheck(vector<string> command, int parameternm =1)
 {
-	if (command.size() <= 1)
+	if (command.size() <= parameternm)
 	{
 		return false;
 		
@@ -85,6 +85,7 @@ int main() {
 					}
 				}
 			}
+			
 			if (dirnamecheck)
 			{
 				tempFolder.name = command[1];
@@ -93,11 +94,62 @@ int main() {
 			}
 			dirnamecheck = true;
 		}
+		
 	}
-	else if (command[0] == "cd" && command[1]=="..")
+	else if (command[0] == "rm")
+	{
+		bool exists = false;
+		bool haschild = false;
+		int parameterindex = 1;
+		int dirindex=0;
+		
+		 if (command[1] == "-rf")
+		{
+			if (!parametercheck(command,2))cout << "ERROR: Missing parameter. \n";
+			else
+			{
+				parameterindex = 2;
+			}
+		}
+		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
+		else {
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				if (tree[i].name == command[parameterindex])
+				{
+					exists = true;	
+					dirindex = i;
+				}
+				if (tree[i].parentfolder == command[parameterindex])
+				{
+					haschild = true;
+					if (command[1] == "-rf")
+					{
+						tree.erase(tree.begin() + i);
+					}
+					
+				}
+
+			}
+			
+			if (!exists)
+			{
+				cout << "ERROR: Directory with that name does not exist.\n";
+			}
+			else if (!haschild)
+			{
+				tree.erase(tree.begin() + dirindex);
+			}
+			else if (haschild && command[1] != "-rf")
+			{
+				cout << "ERROR: Directory is not empty.\n";
+			}
+		}
+	}
+	else if (command[0] == "cd" )
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
-		else
+		else if(command[1]=="..")
 		{
 			if (currentpath.back() != "root")
 			{
@@ -106,6 +158,29 @@ int main() {
 			else
 			{
 				cout << "ERROR: Root has no parent\n";
+			}
+		}
+		else
+		{
+			if (currentpath.back() == command[1])
+			{
+				cout << "ERROR: " << command[1] << " directory already selected.\n";
+			}
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				if (tree[i].parentfolder == currentpath.back())
+				{
+					if (tree[i].name == command[1])
+					{
+						currentpath.push_back(command[1]);
+					}
+				}
+
+			}
+			
+			if (currentpath.back() != command[1])
+			{
+				cout << "ERROR: No directory with that names exists.\n";
 			}
 		}
 	}	
@@ -117,7 +192,7 @@ int main() {
 				cout << tree[i].name<<"\n";
 		}
 	}
-	else if (command[0] == "cd" && command[1] != "..")
+	/*else if (command[0] == "cd" && command[1] != "..")
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
@@ -142,7 +217,7 @@ int main() {
 				cout << "ERROR: No directory with that names exists.\n";
 			}
 		}
-	}
+	}*/
 	else if(command[0]!="exit")
 	{
 		cout << "ERROR: No such command\n";

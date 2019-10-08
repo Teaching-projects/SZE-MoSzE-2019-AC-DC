@@ -1,5 +1,5 @@
 /root>
-/root>ls
+/root>
 Mappa1
 /root>
 /root/Mappa1>
