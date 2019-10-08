@@ -5,14 +5,14 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      - run: 'g++ *.cpp -std=c++11'
+      - run: 'g++ Project1/*.cpp -std=c++11'
   test:
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      - run: './a.out < \.circleci\test.txt > \.circleci\output.txt'
-      - run: 'diff \.circleci\output.txt \.circleci\expectedresult.txt'
+      - run: './a.out < /.circleci\test.txt > /.circleci/output.txt'
+      - run: 'diff /.circleci\output.txt /.circleci/expectedresult.txt'
 workflows:
   version: 2.1
   build_and_test:
