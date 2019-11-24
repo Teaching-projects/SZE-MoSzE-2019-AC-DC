@@ -9,13 +9,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - bin
+            - bin.out
   test:
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      - run: './bin < ./.circleci/test.txt > ./.circleci/output.txt'
+      - run: './bin.out < ./.circleci/test.txt > ./.circleci/output.txt'
       - run: 'diff ./.circleci/output.txt ./.circleci/expectedresult.txt'
 workflows:
   version: 2.1

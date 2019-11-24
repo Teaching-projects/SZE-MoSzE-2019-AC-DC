@@ -1,5 +1,5 @@
 all: Project1/Source.o Project1/Folder.o
-	g++ -o bin Project1/Source.o Project1/Folder.o
+	g++ -o bin.out Project1/Source.o Project1/Folder.o
 
 Source.o: Project1/Source.cpp
 	g++ Project1/Source.cpp
