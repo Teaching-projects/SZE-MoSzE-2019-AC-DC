@@ -3,7 +3,7 @@
 #include <vector>
 #include "Folder.h"
 
-	bool dirnamecheck(vector<Folder> tree, vector<string> currentpath, string name)
+	bool Folder::dirnamecheck(vector<Folder> tree, vector<string> currentpath, string name)
 	{
 		for (size_t i = 0; i < tree.size(); i++)
 		{
@@ -19,7 +19,7 @@
 		}
 		return true;
 	}
-	Folder mk(vector<Folder> tree, vector<string> currentpath, string name, string type)
+	Folder Folder::mk(vector<Folder> tree, vector<string> currentpath, string name, string type)
 	{
 		Folder tempFolder;
 		tempFolder.name = name;

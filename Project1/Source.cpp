@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "Folder.h"
+
 using namespace std;
 vector<string> split(string input)
 {
@@ -73,9 +74,9 @@ int main() {
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
 		{			
-			if (dirnamecheck(tree,currentpath,command[1]))
+			if (Folder().dirnamecheck(tree,currentpath,command[1]))
 			{				
-				tree.push_back(mk(tree, currentpath, command[1], "directory"));
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "directory"));
 			}			
 		}
 		
@@ -85,9 +86,9 @@ int main() {
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
 		{
-			if (dirnamecheck(tree, currentpath, command[1]))
+			if (Folder().dirnamecheck(tree, currentpath, command[1]))
 			{
-				tree.push_back(mk(tree, currentpath, command[1], "file"));
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "file"));
 			}
 		}
 	}
