@@ -51,8 +51,7 @@ int main() {
 	string temp="";
 	Folder tempFolder;
 	vector<string> command;
-	vector<Folder> tree;
-	bool dirnamecheck=true;
+	vector<Folder> tree;	
 	currentpath.push_back("root");
 	do
 	{
@@ -68,33 +67,29 @@ int main() {
 		getline(cin, input_raw);
 		
 	} while (input_raw=="");
-	command = split(input_raw);
+	command = split(input_raw);	
 	if (command[0] == "mkdir")
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
-		{
-			for (size_t i = 0; i < tree.size(); i++)
-			{
-				if (tree[i].parentfolder == currentpath.back())
-				{
-					if (tree[i].name == command[1])
-					{
-						dirnamecheck = false;
-						cout << "ERROR: Directory with that name already exists.\n";
-					}
-				}
-			}
-			
-			if (dirnamecheck)
-			{
-				tempFolder.name = command[1];
-				tempFolder.parentfolder = currentpath.back();
-				tree.push_back(tempFolder);
-			}
-			dirnamecheck = true;
+		{			
+			if (dirnamecheck(tree,currentpath,command[1]))
+			{				
+				tree.push_back(mk(tree, currentpath, command[1], "directory"));
+			}			
 		}
 		
+	}
+	else if (command[0] == "touch")
+	{
+		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
+		else
+		{
+			if (dirnamecheck(tree, currentpath, command[1]))
+			{
+				tree.push_back(mk(tree, currentpath, command[1], "file"));
+			}
+		}
 	}
 	else if (command[0] == "rm")
 	{
@@ -170,10 +165,10 @@ int main() {
 			{
 				if (tree[i].parentfolder == currentpath.back())
 				{
-					if (tree[i].name == command[1])
+					if (tree[i].name == command[1] && tree[i].type=="directory")
 					{
 						currentpath.push_back(command[1]);
-					}
+					}				
 				}
 
 			}
@@ -191,33 +186,7 @@ int main() {
 			if (tree[i].parentfolder == currentpath.back())
 				cout << tree[i].name<<"\n";
 		}
-	}
-	/*else if (command[0] == "cd" && command[1] != "..")
-	{
-		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
-		else
-		{
-			if (currentpath.back() == command[1])
-			{
-				cout << "ERROR: " << command[1] << " directory already selected.\n";
-			}
-			for (size_t i = 0; i < tree.size(); i++)
-			{
-				if (tree[i].parentfolder == currentpath.back())
-				{
-					if (tree[i].name == command[1])
-					{
-						currentpath.push_back(command[1]);
-					}
-				}
-
-			}
-			if (currentpath.back() != command[1])
-			{
-				cout << "ERROR: No directory with that names exists.\n";
-			}
-		}
-	}*/
+	}	
 	else if(command[0]!="exit")
 	{
 		cout << "ERROR: No such command\n";
