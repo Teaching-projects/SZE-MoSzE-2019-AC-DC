@@ -6,12 +6,16 @@ jobs:
     steps:
       - checkout
       - run: 'make'
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
   test:
     machine:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
-      - run: './a.out < ./.circleci/test.txt > ./.circleci/output.txt'
+      - run: './bin < ./.circleci/test.txt > ./.circleci/output.txt'
       - run: 'diff ./.circleci/output.txt ./.circleci/expectedresult.txt'
 workflows:
   version: 2.1
