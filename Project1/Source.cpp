@@ -4,18 +4,18 @@
 #include "Folder.h"
 
 using namespace std;
-vector<string> split(string input)
+vector<string> split(string input, char charsplit)
 {
 	vector<string> command;
 	string temp;
 	for (size_t i = 0; i < input.length() + 1; i++)
 	{
-		if (input[i] == ' ')
+		if (input[i] == charsplit)
 		{
 			command.push_back(temp);			
 			temp = "";
 		}
-		if (input[i] != ' ')
+		if (input[i] != charsplit)
 		{
 			temp = temp + input[i];
 
@@ -53,7 +53,7 @@ int main() {
 	Folder tempFolder;
 	vector<string> command;
 	vector<Folder> tree;	
-	currentpath.push_back("root");
+	currentpath.push_back("~");
 	do
 	{
 		cpath = "";
@@ -62,20 +62,50 @@ int main() {
 		cpath = cpath+'/'+currentpath[i];
 		
 	}
-	cout<<cpath <<">";
+	cout<<cpath <<"$ ";
 	do
 	{
 		getline(cin, input_raw);
 		
 	} while (input_raw=="");
-	command = split(input_raw);	
+	command = split(input_raw,' ');	
 	if (command[0] == "mkdir")
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
-		{			
-			if (Folder().dirnamecheck(tree,currentpath,command[1]))
-			{				
+		{
+			if (command[1].find("/")==0)
+			{
+				command[1].erase(0, 1);
+				vector < string> tempvector;				
+				tempvector = split(command[1], '/');
+				tempvector.insert(tempvector.begin(), "~");				
+				tempvector.pop_back();
+				bool error=true;				
+				if (Folder().dirnamecheck(tree, currentpath, split(command[1], '/').back()))
+				{
+					for (size_t i = 0; i < tree.size(); i++)
+					{
+						if (tree[i].AbsolutePath ==tempvector )
+						{
+							tree.push_back(Folder().mk(tree, tempvector, split(command[1], '/').back(), "directory"));
+							error = false;
+						}
+						
+					}
+					if (error)
+					{
+						cout << "ERROR: Path does not exist.\n";
+					}
+				}
+			}
+			else if (command[1].find("../")==0)
+			{
+
+			}
+			else if (Folder().dirnamecheck(tree,currentpath,command[1]))
+			{
+				
 				tree.push_back(Folder().mk(tree, currentpath, command[1], "directory"));
 			}			
 		}
@@ -121,7 +151,7 @@ int main() {
 					haschild = true;
 					if (command[1] == "-rf")
 					{
-						tree.erase(tree.begin() + i);
+						tree.erase(tree.begin() + i-1);
 					}
 					
 				}
@@ -147,7 +177,7 @@ int main() {
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else if(command[1]=="..")
 		{
-			if (currentpath.back() != "root")
+			if (currentpath.back() != "~")
 			{
 				currentpath.pop_back();
 			}
@@ -156,8 +186,57 @@ int main() {
 				cout << "ERROR: Root has no parent\n";
 			}
 		}
+		else if (command[1].find("../") == 0)
+		{			
+			command[1].erase(0, 2);			
+			vector<string> relpath;
+			relpath = split(command[1], '/');
+			relpath.insert(relpath.begin(), currentpath.begin(), currentpath.end());
+			bool error = true;
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				
+				if (tree[i].AbsolutePath == relpath);
+				{
+					currentpath = tree[i].AbsolutePath;
+					//currentpath.push_back(tree[i].name);
+					error = false;
+				}
+			}
+			if (error)
+			{
+				cout << "ERROR: No directory with that names exists.\n";
+			}
+		}
+		else if (command[1].find("/") == 0)
+		{			
+			bool error = true;
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				
+				if(tree[i].AbsolutePath == split(command[1],'/'));
+				{	
+					
+					currentpath = tree[i].AbsolutePath;
+				//	currentpath.push_back(tree[i].name);
+					error= false;					
+
+				}				
+			}
+			if (command[1] == "/")
+			{
+				currentpath.clear();
+				currentpath.push_back("~");
+
+			}
+			else if (error)
+			{
+				cout << "ERROR: No directory with that names exists.\n";
+			}
+		}
 		else
 		{
+
 			if (currentpath.back() == command[1])
 			{
 				cout << "ERROR: " << command[1] << " directory already selected.\n";
@@ -174,7 +253,7 @@ int main() {
 
 			}
 			
-			if (currentpath.back() != command[1])
+			if (currentpath.back() != command[1] && command[1].find("/") != 0 && command[1].find("../") != 0)
 			{
 				cout << "ERROR: No directory with that names exists.\n";
 			}
@@ -182,9 +261,12 @@ int main() {
 	}	
 	else if (command[0] == "ls")
 	{
+	vector<string> tempvector;	
 		for (size_t i = 0; i < tree.size(); i++)
 		{
-			if (tree[i].parentfolder == currentpath.back())
+			tempvector = tree[i].AbsolutePath;
+			tempvector.pop_back();
+			if (tempvector == currentpath)
 				cout << tree[i].name<<"\n";
 		}
 	}	
