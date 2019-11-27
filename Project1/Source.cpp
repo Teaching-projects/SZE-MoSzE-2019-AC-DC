@@ -4,35 +4,7 @@
 #include "Folder.h"
 
 using namespace std;
-vector<string> split(string input, char charsplit)
-{
-	vector<string> command;
-	string temp;
-	for (size_t i = 0; i < input.length() + 1; i++)
-	{
-		if (input[i] == charsplit)
-		{
-			command.push_back(temp);			
-			temp = "";
-		}
-		if (input[i] != charsplit)
-		{
-			temp = temp + input[i];
 
-		}
-		if (i == input.length() - 1)
-		{
-
-			command.push_back(temp);			
-			temp = "";
-
-
-		}
-
-	}
-	return command;
-
-}
 bool parametercheck(vector<string> command, int parameternm =1)
 {
 	if (command.size() <= parameternm)
@@ -68,7 +40,7 @@ int main() {
 		getline(cin, input_raw);
 		
 	} while (input_raw=="");
-	command = split(input_raw,' ');	
+	command = Folder().split(input_raw,' ');	
 	if (command[0] == "mkdir")
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
@@ -76,32 +48,20 @@ int main() {
 		{
 			if (command[1].find("/")==0)
 			{
-				command[1].erase(0, 1);
-				vector < string> tempvector;				
-				tempvector = split(command[1], '/');
-				tempvector.insert(tempvector.begin(), "~");				
-				tempvector.pop_back();
-				bool error=true;				
-				if (Folder().dirnamecheck(tree, currentpath, split(command[1], '/').back()))
+				vector<string>tempvector =Folder().FindAbsPath(tree,currentpath,command[1],"abs");
+				if (!tempvector.empty())
 				{
-					for (size_t i = 0; i < tree.size(); i++)
-					{
-						if (tree[i].AbsolutePath ==tempvector )
-						{
-							tree.push_back(Folder().mk(tree, tempvector, split(command[1], '/').back(), "directory"));
-							error = false;
-						}
-						
-					}
-					if (error)
-					{
-						cout << "ERROR: Path does not exist.\n";
-					}
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "directory"));
 				}
 			}
-			else if (command[1].find("../")==0)
+			else if (command[1].find("../")==0) // TO DO
 			{
-
+								
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "rel");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "directory"));
+				}
 			}
 			else if (Folder().dirnamecheck(tree,currentpath,command[1]))
 			{
@@ -116,18 +76,45 @@ int main() {
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
 		{
+			if (command[1].find("/") == 0)
+			{
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "abs");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "file"));
+				}
+			}
+			else if (command[1].find("../") == 0) // TO DO
+			{
+
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "rel");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "file"));
+				}
+			}
+			else if (Folder().dirnamecheck(tree, currentpath, command[1]))
+			{
+
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "file"));
+			}
+		}
+		/*if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
+		else
+		{
 			if (Folder().dirnamecheck(tree, currentpath, command[1]))
 			{
 				tree.push_back(Folder().mk(tree, currentpath, command[1], "file"));
 			}
-		}
+		}*/
 	}
-	else if (command[0] == "rm")
+	else if (command[0] == "rm")// -RF hibás 
 	{
 		bool exists = false;
-		bool haschild = false;
+		bool haschild = false;		
 		int parameterindex = 1;
 		int dirindex=0;
+		vector<string> ABSPATH;
 		
 		 if (command[1] == "-rf")
 		{
@@ -139,22 +126,40 @@ int main() {
 		}
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else {
+			if (command[parameterindex].find("/") == 0)
+			{
+				ABSPATH = Folder().FindAbsPath(tree, currentpath, command[parameterindex], "abs");
+				if(!ABSPATH.empty()) ABSPATH.push_back(Folder().split(command[parameterindex], '/').back());				
+			}
+			else if (command[parameterindex].find("../") == 0)
+			{
+				ABSPATH = Folder().FindAbsPath(tree, currentpath, command[parameterindex], "rel");
+				if (!ABSPATH.empty()) ABSPATH.push_back(Folder().split(command[parameterindex], '/').back());				
+			}
+			else
+			{
+				ABSPATH = currentpath;
+				ABSPATH.push_back(command[parameterindex]);
+			}			
 			for (size_t i = 0; i < tree.size(); i++)
 			{
-				if (tree[i].name == command[parameterindex])
+				if (tree[i].AbsolutePath==ABSPATH)
 				{
 					exists = true;	
 					dirindex = i;
 				}
-				if (tree[i].parentfolder == command[parameterindex])
+				
+				if (tree[i].parentfolder == Folder().split(command[parameterindex], '/').back())
 				{
 					haschild = true;
 					if (command[1] == "-rf")
 					{
 						tree.erase(tree.begin() + i-1);
-					}
+					}					
 					
 				}
+				
+				
 
 			}
 			
@@ -190,7 +195,7 @@ int main() {
 		{			
 			command[1].erase(0, 2);			
 			vector<string> relpath;
-			relpath = split(command[1], '/');
+			relpath = Folder().split(command[1], '/');
 			relpath.insert(relpath.begin(), currentpath.begin(), currentpath.end());
 			bool error = true;
 			for (size_t i = 0; i < tree.size(); i++)
@@ -214,7 +219,7 @@ int main() {
 			for (size_t i = 0; i < tree.size(); i++)
 			{
 				
-				if(tree[i].AbsolutePath == split(command[1],'/'));
+				if(tree[i].AbsolutePath == Folder().split(command[1],'/'));
 				{	
 					
 					currentpath = tree[i].AbsolutePath;
