@@ -1,3 +1,5 @@
 /~$ /~$ Mappa1
 /~$ /~/Mappa1$ /~/Mappa1$ Mappa2
-/~/Mappa1$ /~$ 
+/~/Mappa1$ /~/Mappa1$ /~/Mappa1$ /~$ /~$ Mappa1
+file
+/~$ 
