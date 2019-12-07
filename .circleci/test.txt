@@ -3,5 +3,9 @@ ls
 cd Mappa1
 mkdir Mappa2
 ls
+rm Mappa2
+ls
 cd ..
+touch file
+ls
 exit

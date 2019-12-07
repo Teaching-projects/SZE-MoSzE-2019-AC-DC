@@ -2,36 +2,9 @@
 #include <iostream>
 #include <vector>
 #include "Folder.h"
+
 using namespace std;
-vector<string> split(string input)
-{
-	vector<string> command;
-	string temp;
-	for (size_t i = 0; i < input.length() + 1; i++)
-	{
-		if (input[i] == ' ')
-		{
-			command.push_back(temp);			
-			temp = "";
-		}
-		if (input[i] != ' ')
-		{
-			temp = temp + input[i];
 
-		}
-		if (i == input.length() - 1)
-		{
-
-			command.push_back(temp);			
-			temp = "";
-
-
-		}
-
-	}
-	return command;
-
-}
 bool parametercheck(vector<string> command, int parameternm =1)
 {
 	if (command.size() <= parameternm)
@@ -51,9 +24,8 @@ int main() {
 	string temp="";
 	Folder tempFolder;
 	vector<string> command;
-	vector<Folder> tree;
-	bool dirnamecheck=true;
-	currentpath.push_back("root");
+	vector<Folder> tree;	
+	currentpath.push_back("~");
 	do
 	{
 		cpath = "";
@@ -62,46 +34,87 @@ int main() {
 		cpath = cpath+'/'+currentpath[i];
 		
 	}
-	cout<<cpath <<">";
+	cout<<cpath <<"$ ";
 	do
 	{
 		getline(cin, input_raw);
 		
 	} while (input_raw=="");
-	command = split(input_raw);
+	command = Folder().split(input_raw,' ');	
 	if (command[0] == "mkdir")
 	{
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else
 		{
-			for (size_t i = 0; i < tree.size(); i++)
+			if (command[1].find("/")==0)
 			{
-				if (tree[i].parentfolder == currentpath.back())
+				vector<string>tempvector =Folder().FindAbsPath(tree,currentpath,command[1],"abs");
+				if (!tempvector.empty())
 				{
-					if (tree[i].name == command[1])
-					{
-						dirnamecheck = false;
-						cout << "ERROR: Directory with that name already exists.\n";
-					}
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "directory"));
 				}
 			}
-			
-			if (dirnamecheck)
+			else if (command[1].find("../")==0) // TO DO
 			{
-				tempFolder.name = command[1];
-				tempFolder.parentfolder = currentpath.back();
-				tree.push_back(tempFolder);
+								
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "rel");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "directory"));
+				}
 			}
-			dirnamecheck = true;
+			else if (Folder().dirnamecheck(tree,currentpath,command[1]))
+			{
+				
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "directory"));
+			}			
 		}
 		
 	}
-	else if (command[0] == "rm")
+	else if (command[0] == "touch")
+	{
+		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
+		else
+		{
+			if (command[1].find("/") == 0)
+			{
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "abs");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "file"));
+				}
+			}
+			else if (command[1].find("../") == 0) // TO DO
+			{
+
+				vector<string>tempvector = Folder().FindAbsPath(tree, currentpath, command[1], "rel");
+				if (!tempvector.empty())
+				{
+					tree.push_back(Folder().mk(tree, tempvector, Folder().split(command[1], '/').back(), "file"));
+				}
+			}
+			else if (Folder().dirnamecheck(tree, currentpath, command[1]))
+			{
+
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "file"));
+			}
+		}
+		/*if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
+		else
+		{
+			if (Folder().dirnamecheck(tree, currentpath, command[1]))
+			{
+				tree.push_back(Folder().mk(tree, currentpath, command[1], "file"));
+			}
+		}*/
+	}
+	else if (command[0] == "rm")// -RF hibás 
 	{
 		bool exists = false;
-		bool haschild = false;
+		bool haschild = false;		
 		int parameterindex = 1;
 		int dirindex=0;
+		vector<string> ABSPATH;
 		
 		 if (command[1] == "-rf")
 		{
@@ -113,22 +126,40 @@ int main() {
 		}
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else {
+			if (command[parameterindex].find("/") == 0)
+			{
+				ABSPATH = Folder().FindAbsPath(tree, currentpath, command[parameterindex], "abs");
+				if(!ABSPATH.empty()) ABSPATH.push_back(Folder().split(command[parameterindex], '/').back());				
+			}
+			else if (command[parameterindex].find("../") == 0)
+			{
+				ABSPATH = Folder().FindAbsPath(tree, currentpath, command[parameterindex], "rel");
+				if (!ABSPATH.empty()) ABSPATH.push_back(Folder().split(command[parameterindex], '/').back());				
+			}
+			else
+			{
+				ABSPATH = currentpath;
+				ABSPATH.push_back(command[parameterindex]);
+			}			
 			for (size_t i = 0; i < tree.size(); i++)
 			{
-				if (tree[i].name == command[parameterindex])
+				if (tree[i].AbsolutePath==ABSPATH)
 				{
 					exists = true;	
 					dirindex = i;
 				}
-				if (tree[i].parentfolder == command[parameterindex])
+				
+				if (tree[i].parentfolder == Folder().split(command[parameterindex], '/').back())
 				{
 					haschild = true;
 					if (command[1] == "-rf")
 					{
-						tree.erase(tree.begin() + i);
-					}
+						tree.erase(tree.begin() + i-1);
+					}					
 					
 				}
+				
+				
 
 			}
 			
@@ -151,7 +182,7 @@ int main() {
 		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
 		else if(command[1]=="..")
 		{
-			if (currentpath.back() != "root")
+			if (currentpath.back() != "~")
 			{
 				currentpath.pop_back();
 			}
@@ -160,8 +191,57 @@ int main() {
 				cout << "ERROR: Root has no parent\n";
 			}
 		}
+		else if (command[1].find("../") == 0)
+		{			
+			command[1].erase(0, 2);			
+			vector<string> relpath;
+			relpath = Folder().split(command[1], '/');
+			relpath.insert(relpath.begin(), currentpath.begin(), currentpath.end());
+			bool error = true;
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				
+				if (tree[i].AbsolutePath == relpath);
+				{
+					currentpath = tree[i].AbsolutePath;
+					//currentpath.push_back(tree[i].name);
+					error = false;
+				}
+			}
+			if (error)
+			{
+				cout << "ERROR: No directory with that names exists.\n";
+			}
+		}
+		else if (command[1].find("/") == 0)
+		{			
+			bool error = true;
+			for (size_t i = 0; i < tree.size(); i++)
+			{
+				
+				if(tree[i].AbsolutePath == Folder().split(command[1],'/'));
+				{	
+					
+					currentpath = tree[i].AbsolutePath;
+				//	currentpath.push_back(tree[i].name);
+					error= false;					
+
+				}				
+			}
+			if (command[1] == "/")
+			{
+				currentpath.clear();
+				currentpath.push_back("~");
+
+			}
+			else if (error)
+			{
+				cout << "ERROR: No directory with that names exists.\n";
+			}
+		}
 		else
 		{
+
 			if (currentpath.back() == command[1])
 			{
 				cout << "ERROR: " << command[1] << " directory already selected.\n";
@@ -170,15 +250,15 @@ int main() {
 			{
 				if (tree[i].parentfolder == currentpath.back())
 				{
-					if (tree[i].name == command[1])
+					if (tree[i].name == command[1] && tree[i].type=="directory")
 					{
 						currentpath.push_back(command[1]);
-					}
+					}				
 				}
 
 			}
 			
-			if (currentpath.back() != command[1])
+			if (currentpath.back() != command[1] && command[1].find("/") != 0 && command[1].find("../") != 0)
 			{
 				cout << "ERROR: No directory with that names exists.\n";
 			}
@@ -186,38 +266,15 @@ int main() {
 	}	
 	else if (command[0] == "ls")
 	{
+	vector<string> tempvector;	
 		for (size_t i = 0; i < tree.size(); i++)
 		{
-			if (tree[i].parentfolder == currentpath.back())
+			tempvector = tree[i].AbsolutePath;
+			tempvector.pop_back();
+			if (tempvector == currentpath)
 				cout << tree[i].name<<"\n";
 		}
-	}
-	/*else if (command[0] == "cd" && command[1] != "..")
-	{
-		if (!parametercheck(command))cout << "ERROR: Missing parameter. \n";
-		else
-		{
-			if (currentpath.back() == command[1])
-			{
-				cout << "ERROR: " << command[1] << " directory already selected.\n";
-			}
-			for (size_t i = 0; i < tree.size(); i++)
-			{
-				if (tree[i].parentfolder == currentpath.back())
-				{
-					if (tree[i].name == command[1])
-					{
-						currentpath.push_back(command[1]);
-					}
-				}
-
-			}
-			if (currentpath.back() != command[1])
-			{
-				cout << "ERROR: No directory with that names exists.\n";
-			}
-		}
-	}*/
+	}	
 	else if(command[0]!="exit")
 	{
 		cout << "ERROR: No such command\n";

@@ -1,9 +1,5 @@
-/root>
-/root>
-Mappa1
-/root>
-/root/Mappa1>
-/root/Mappa1>
-Mappa2
-/root/Mappa1>
-/root>
+/~$ /~$ Mappa1
+/~$ /~/Mappa1$ /~/Mappa1$ Mappa2
+/~/Mappa1$ /~/Mappa1$ /~/Mappa1$ /~$ /~$ Mappa1
+file
+/~$ 
